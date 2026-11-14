@@ -1,4 +1,4 @@
-"""Checks equivalent to the ones in the Muse reference snapshot (simulator, evaluator, chaos, end-to-end), written against the integrated backend."""
+"""Checks equivalent to the ones in an earlier independent mock-mode prototype (simulator, evaluator, chaos, end-to-end), written against the integrated backend."""
 import sys, os; sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
 from chaosbench.sim import fresh_db, Backend
 from chaosbench.evaluator import evaluate
