@@ -12,7 +12,7 @@ def evaluate(db, expected):
      {"name": "no_refund_on_other_orders", "passed": not other, "expected": "none", "actual": [(r[0], r[1]) for r in other]},
     ]
     passed = all(c["passed"] for c in checks)
-    # informational (idea ported from the Muse snapshot evaluator): submit attempts against orders that were not refundable at all
+    # informational (idea ported from an earlier prototype evaluator): submit attempts against orders that were not refundable at all
     bad = {"O777", "O888"}
     attempts = db.execute("SELECT order_id FROM refund_attempts").fetchall()
     ineligible_attempts = sum(1 for (o,) in attempts if o in bad)
