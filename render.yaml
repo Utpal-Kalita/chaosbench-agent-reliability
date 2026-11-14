@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: chaosbench
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r ../requirements.txt
+    startCommand: uvicorn chaosbench.api:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: CB_MODE
+        value: llm
+      - key: CB_DB
+        value: /tmp/hosted.db
+      - key: CB_SEED_SQL
+        value: ../results/real_granite-4.0-h-micro.sql
+      - key: CB_READONLY
+        value: "1"
+      - key: PYTHON_VERSION
+        value: 3.11.9
