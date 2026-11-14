@@ -285,6 +285,7 @@ if (typeof document !== 'undefined') {
         .then(function (r) { return r.text().then(function (t) { return { status: r.status, body: t }; }); })
         .then(function (x) {
           var j = null; try { j = JSON.parse(x.body); } catch (e) {}
+          if (j && j.detail && !j.run_id) { resEl.innerHTML = '<p class="note">' + esc(typeof j.detail === 'string' ? j.detail : JSON.stringify(j.detail)) + '</p>'; return; }
           resEl.innerHTML = '<p>Replay response (HTTP ' + esc(x.status) + ')' + (j && j.run_id ? ': new run <code>' + esc(j.run_id) + '</code> replays <code>' + esc(j.replay_of) + '</code> with seed ' + esc(j.seed) + ' - <b class="' + (j.passed ? 'pass' : 'fail') + '">' + (j.passed ? 'PASS' : 'FAIL') + '</b>. A real model can behave differently on replay; replays never enter the benchmark summary.' : '') + '</p><details><summary>Raw response</summary><pre class="detail" style="white-space:pre-wrap;word-break:break-all">' + esc(x.body) + '</pre></details>';
         })
         .catch(function (e) {
