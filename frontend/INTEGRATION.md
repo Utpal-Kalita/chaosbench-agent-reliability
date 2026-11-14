@@ -1,6 +1,6 @@
 # Integration notes (backend side)
 
-`frontend/` is Muse's standalone HTML/CSS/JS dashboard (no framework, no build step, no external scripts), added from her archive `chaosbench-frontend-2026-11-14-bdff8984.zip`. It is not a Next.js app.
+`frontend/` is a standalone HTML/CSS/JS dashboard (no framework, no build step, no external scripts). It is not a Next.js app.
 
 Changes made when integrating with the real backend (everything else is her original):
 1. `live.js` (new). Active only with `?api=<base-url>`. It answers the dashboard's dataset request from the live API: summary, scenarios, runs and the full trace of every run. Replays are excluded from the dataset.
