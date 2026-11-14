@@ -20,7 +20,7 @@ It is read-only and hosted on GitHub Pages. The Failure Replay button needs the 
 - `backend/chaosbench/metrics.py`, `api.py`, `__main__.py` - metrics (incl. pass^k), FastAPI endpoints, CLI.
 - `docs/METRICS.md`, `docs/PREREGISTRATION.md`, `docs/EXPLORATORY_RESULTS.md` - definitions, what was decided before running, and the exploratory CB-06 result.
 - `results/` - raw run databases from real model runs as SQLite text dumps (`*.sql`). `contracts/` - API fixtures.
-- `tests/test_ported_checks.py` - simulator, evaluator, chaos and CB-06 checks equivalent to those in Muse's independent mock-mode MVP (see `reference/README.md` for provenance).
+- `tests/test_ported_checks.py` - simulator, evaluator, chaos and CB-06 checks equivalent to those of an earlier independent mock-mode prototype.
 
 ## Scenarios
 | ID | Fault | Correct behaviour |
@@ -58,7 +58,7 @@ Restoring all three dumps was checked to give databases identical to the origina
 ## Dashboard
 `uvicorn chaosbench.api:app` also serves a single-page dashboard at `/`: agent cards, the pass^3 matrix, every run, a per-run trace timeline with the evaluator's checks, and a replay button (same scenario, agent and seed). Replays are stored and listed but never counted in the summary. The page is labelled REAL MODEL RUNS or MOCK from the stored mode. Replaying a real run calls the model again and can differ from the original.
 
-## Frontend (Muse's standalone dashboard)
+## Frontend (standalone dashboard)
 `frontend/` holds a second dashboard (overview cards, baseline vs resilient table, per-scenario pass^3, per-run trace timeline, failure replay). With the backend running it is served at `http://localhost:8000/ui/?api=http://localhost:8000` and shows every real run's full trace; replay calls the live backend. See `frontend/INTEGRATION.md`. The simpler page at `/` is a fallback.
 
 ## API
