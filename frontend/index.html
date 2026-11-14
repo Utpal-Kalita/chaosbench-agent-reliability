@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChaosBench — Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <h1>Chaos<span class="accent">Bench</span></h1>
+    <p class="tagline">The Crash-Test Laboratory for AI Agents — dashboard</p>
+  </div>
+  <div class="top-right">
+    <span id="mode-badge" class="badge">…</span>
+    <label class="dataset-switch" for="dataset-select">Dataset
+      <select id="dataset-select">
+        <option value="sample_results.json">Mock fixture (contract v1)</option>
+        <option value="real_results_granite.json">Real LLM — Granite 4.0 H micro</option>
+      </select>
+    </label>
+  </div>
+</header>
+
+<main>
+  <section id="meta" class="meta"></section>
+
+  <section>
+    <h2>Overview — per agent</h2>
+    <div id="cards" class="cards"></div>
+  </section>
+
+  <section>
+    <h2>Baseline vs Resilient</h2>
+    <table id="compare-table" class="table"></table>
+  </section>
+
+  <section>
+    <h2>Per-scenario breakdown</h2>
+    <table id="scenario-table" class="table"></table>
+    <p class="note">Recovery = faults recovered ÷ faults injected, per scenario.
+    Scenarios with no injected faults show n/a. pass^k = all repetitions of the
+    scenario passed.</p>
+  </section>
+
+  <section>
+    <h2>Trace timeline</h2>
+    <div class="trace-controls">
+      <label>Scenario
+        <select id="run-scenario"></select>
+      </label>
+      <label>Agent
+        <select id="run-agent">
+          <option value="baseline">baseline</option>
+          <option value="resilient">resilient</option>
+        </select>
+      </label>
+      <label>Rep
+        <select id="run-rep">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+        </select>
+      </label>
+      <button id="replay-btn" type="button">Failure Replay</button>
+      <span id="replay-note" class="note"></span>
+    </div>
+    <div id="run-summary" class="run-summary"></div>
+    <div id="timeline" class="timeline"></div>
+    <div id="evaluation" class="evaluation"></div>
+  </section>
+
+  <section>
+    <h2>Failure Replay</h2>
+    <p class="note">Replay re-runs a run with the same seed and fault against the
+    live contract-v1 backend (<code>POST /api/runs/{run_id}/replay</code>).
+    Replay runs are excluded from the benchmark summary. Replay needs a live
+    backend: open this page with <code>?api=&lt;base-url&gt;</code>
+    (e.g. <code>?api=http://127.0.0.1:8000</code>) to enable Replay. Nothing is
+    simulated client-side.</p>
+    <div id="replay-result"></div>
+  </section>
+</main>
+
+<footer>
+  <p>ChaosBench — Geek Room Global AI Hackathon 2026, Theme 2 (agent benchmarking).
+  Contract v1. See <code>CONTRACT.md</code> for the data contract, sources and gaps.</p>
+</footer>
+
+<script src="data.js"></script>
+<script src="live.js"></script>  <!-- INTEGRATION: only active with ?api=<base-url> -->
+<script src="app.js"></script>
+</body>
+</html>
