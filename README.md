@@ -6,6 +6,11 @@ Built solo for the Geek Room Global AI Hackathon 2026, theme 2 (framework-indepe
 ChaosBench runs two agents on identical tasks, in an identical simulated customer-support backend, while a seeded chaos engine
 injects failures. Outcomes are judged by inspecting the database, not by trusting what the agent says.
 
+## Live demo
+Static dashboard of the recorded real runs (30 runs, granite-4.0-h-micro), with per-run traces and ground-truth checks: https://utpal-kalita.github.io/chaosbench-agent-reliability/
+
+It is read-only and hosted on GitHub Pages. The Failure Replay button needs the local backend, so it is disabled there. A dataset dropdown also offers the scripted mock fixture, labelled as mock.
+
 ## What is in this repo
 - `backend/chaosbench/sim.py` - simulated refund backend (SQLite, synthetic data, no real payments or customers).
 - `backend/chaosbench/chaos.py` - reproducible fault injection: HTTP 503, malformed JSON, prompt injection, commit-then-503 (duplicate refund risk), and an exploratory injected model outage.
@@ -29,7 +34,7 @@ injects failures. Outcomes are judged by inspecting the database, not by trustin
 
 ## Run it
 ```bash
-git clone https://github.com/Utpal-Kalita/chaosbench && cd chaosbench
+git clone https://github.com/Utpal-Kalita/chaosbench-agent-reliability && cd chaosbench-agent-reliability
 python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
 python -m pytest -q tests                           # 23 tests, no network, no model calls
 cd backend
