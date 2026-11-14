@@ -114,7 +114,7 @@ if (typeof module !== 'undefined' && module.exports) {
 /* ---------- browser boot ---------- */
 if (typeof document !== 'undefined') {
   var DATASETS = ['sample_results.json', 'real_results_granite.json'];
-  var state = { data: null, file: 'sample_results.json', apiBase: null, source: '' };
+  var state = { data: null, file: 'real_results_granite.json', apiBase: null, source: '' };
 
   function params() { return new URLSearchParams(window.location.search); }
 
@@ -311,7 +311,7 @@ if (typeof document !== 'undefined') {
   function init() {
     var p = params();
     state.apiBase = p.get('api') || null;
-    var file = p.get('data') || (state.apiBase ? 'real_results_granite.json' : 'sample_results.json');  // INTEGRATION PATCH: live mode defaults to the live dataset
+    var file = p.get('data') || 'real_results_granite.json';  // INTEGRATION PATCH: live mode defaults to the live dataset
     if (DATASETS.indexOf(file) === -1) file = 'sample_results.json';
     document.getElementById('dataset-select').value = file;
     document.getElementById('dataset-select').addEventListener('change', function (e) {
