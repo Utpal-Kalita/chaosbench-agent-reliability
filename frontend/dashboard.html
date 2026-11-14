@@ -1735,6 +1735,18 @@
         const itemsToRender = isExpanded ? processedEvents : compactItems;
         const hiddenCount = processedEvents.length - compactItems.length;
 
+        // An error response is labelled as the injected fault's response only when event order shows it:
+        // a fault_injected event for the same tool precedes it with no other response for that tool in between.
+        const injectedResp = {};
+        const pendingInj = {};
+        processedEvents.forEach(function (pe) {
+          const e = pe.eventObj;
+          const t = String(e.tool || '');
+          const et = String(e.event || '').toLowerCase();
+          if (et === 'fault_injected') { pendingInj[t] = true; }
+          else if (et === 'tool_response' && pendingInj[t]) { pendingInj[t] = false; if (pe.kind === 'fault') injectedResp[pe.originalIndex] = true; }
+        });
+
         const list = el('ol', 'event-list');
 
         let lastRenderedIndex = -1;
@@ -1759,7 +1771,7 @@
 
           const badges = el('div', 'event-badges');
           if (kind === 'fault') {
-            badges.appendChild(el('span', 'event-tag event-tag-state', (String(ev.event || '').toLowerCase() === 'fault_injected' ? 'INJECTED FAULT' : 'TOOL ERROR')));
+            badges.appendChild(el('span', 'event-tag event-tag-state', (String(ev.event || '').toLowerCase() === 'fault_injected' ? 'INJECTED FAULT' : (injectedResp[pe.originalIndex] ? 'INJECTED FAULT RESPONSE' : 'TOOL ERROR'))));
           } else if (kind === 'recovery') {
             badges.appendChild(el('span', 'event-tag event-tag-state', 'RECOVERY'));
           }
@@ -1859,7 +1871,12 @@
           item.appendChild(top);
 
           if (chk.expected !== undefined) {
-            const expStr = typeof chk.expected === 'string' ? chk.expected : JSON.stringify(chk.expected);
+            let expStr = typeof chk.expected === 'string' ? chk.expected : JSON.stringify(chk.expected);
+            // Older stored runs carry the label "exactly 1" for this check; the evaluator's pass rule is len <= 1
+            // (existence is checked separately), so show the rule that was actually applied. Stored data is untouched.
+            if (chk.name === 'no_duplicate_refund' && /^exactly 1/.test(expStr)) {
+              expStr = '<= 1 (no duplicates; existence is a separate check)';
+            }
             item.appendChild(el('div', 'check-kv', 'expected: ' + expStr));
           }
           if (chk.actual !== undefined) {
