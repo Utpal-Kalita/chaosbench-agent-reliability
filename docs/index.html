@@ -1,95 +1,1453 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ChaosBench — Dashboard</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChaosBench — Crash-Test Laboratory for AI Agents</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --bg-elevated: #ebe6dc;
+      --bg-card: #f9f7f2;
+      --ink: #141413;
+      --ink-muted: #52504a;
+      --ink-subtle: #6e6b63;
+      --rule: #c8c2b4;
+      --rule-strong: #141413;
+      --fault: #ff4d00;
+      --fault-bg: rgba(255, 77, 0, 0.08);
+      --pass: #0b6b3a;
+      --pass-bg: rgba(11, 107, 58, 0.08);
+
+      --font-serif: "Iowan Old Style", Georgia, "Times New Roman", Times, serif;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      border-radius: 0 !important;
+    }
+
+    html {
+      background-color: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg);
+      color: var(--ink);
+      background-image:
+        linear-gradient(to right, rgba(20, 20, 19, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(20, 20, 19, 0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--fault);
+      outline-offset: 3px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .grid-12 {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    /* Top Instrument Bar */
+    .topbar {
+      border-bottom: 1px solid var(--rule-strong);
+      background: var(--bg);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .topbar-inner {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      font-weight: 700;
+      color: var(--ink);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: var(--fault);
+      border: 1px solid var(--ink);
+    }
+
+    .topbar-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      color: var(--ink-muted);
+    }
+
+    /* Hero */
+    .hero {
+      padding: 56px 0 64px;
+      border-bottom: 1px solid var(--rule-strong);
+    }
+
+    .hero-copy {
+      grid-column: span 7;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .eyebrow::before {
+      content: "";
+      display: inline-block;
+      width: 18px;
+      height: 1px;
+      background: var(--ink);
+    }
+
+    h1 {
+      font-family: var(--font-serif);
+      font-weight: 400;
+      font-size: clamp(2.5rem, 5.2vw, 4.35rem);
+      line-height: 1.04;
+      letter-spacing: -0.025em;
+      margin: 0 0 24px;
+      color: var(--ink);
+    }
+
+    .tagline {
+      font-size: clamp(1.1rem, 1.5vw, 1.25rem);
+      line-height: 1.5;
+      color: var(--ink-muted);
+      max-width: 54ch;
+      margin: 0 0 36px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--ink);
+      color: var(--bg);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 15px 26px;
+      border: 1px solid var(--ink);
+      transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+    }
+
+    .btn-primary:hover {
+      background: var(--fault);
+      border-color: var(--fault);
+      color: #ffffff;
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      color: var(--ink);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 15px 22px;
+      border: 1px solid var(--ink);
+      transition: background-color 0.16s ease, color 0.16s ease;
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-elevated);
+    }
+
+    /* CSS-Only Crash Test Timeline Visual */
+    .hero-visual {
+      grid-column: span 5;
+      border: 1px solid var(--rule-strong);
+      background: var(--bg-card);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .diagram-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--rule-strong);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: var(--bg-elevated);
+    }
+
+    .diagram-stage {
+      padding: 24px 18px 20px;
+      position: relative;
+    }
+
+    .axis-labels {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--ink-subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 18px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed var(--rule);
+    }
+
+    .timeline-canvas {
+      position: relative;
+      padding: 8px 0 4px;
+    }
+
+    /* Fault Vertical Marker Line */
+    .fault-line {
+      position: absolute;
+      left: 44%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: var(--fault);
+      z-index: 2;
+    }
+
+    .fault-badge {
+      position: absolute;
+      left: 44%;
+      top: -10px;
+      transform: translateX(-50%);
+      background: var(--fault);
+      color: #ffffff;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 2px 6px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      z-index: 3;
+    }
+
+    .track {
+      margin-bottom: 26px;
+      position: relative;
+    }
+
+    .track:last-child {
+      margin-bottom: 6px;
+    }
+
+    .track-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      margin-bottom: 8px;
+    }
+
+    .track-name {
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .track-status-fail {
+      color: var(--fault);
+      font-weight: 700;
+    }
+
+    .track-status-pass {
+      color: var(--pass);
+      font-weight: 700;
+    }
+
+    .track-rail {
+      position: relative;
+      height: 28px;
+      background: var(--bg);
+      border: 1px solid var(--rule);
+      display: flex;
+      align-items: center;
+    }
+
+    .progress-shared {
+      height: 4px;
+      width: 44%;
+      background: var(--ink);
+      transform-origin: left center;
+      animation: drawShared 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    .progress-fail-stub {
+      height: 4px;
+      width: 6%;
+      background: var(--fault);
+      transform-origin: left center;
+      opacity: 0;
+      animation: drawStub 0.3s ease 0.6s forwards;
+    }
+
+    .node-x {
+      width: 20px;
+      height: 20px;
+      background: var(--fault);
+      color: #ffffff;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 2px;
+      opacity: 0;
+      animation: popNode 0.25s ease 0.85s forwards;
+    }
+
+    .progress-retry {
+      height: 4px;
+      width: 22%;
+      background: repeating-linear-gradient(
+        to right,
+        var(--fault) 0,
+        var(--fault) 5px,
+        transparent 5px,
+        transparent 9px
+      );
+      transform-origin: left center;
+      opacity: 0;
+      animation: drawRetry 0.45s ease 0.65s forwards;
+    }
+
+    .progress-recover {
+      height: 4px;
+      width: 24%;
+      background: var(--pass);
+      transform-origin: left center;
+      opacity: 0;
+      animation: drawRecover 0.45s ease 1.05s forwards;
+    }
+
+    .node-check {
+      width: 20px;
+      height: 20px;
+      background: var(--pass);
+      color: #ffffff;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 2px;
+      opacity: 0;
+      animation: popNode 0.25s ease 1.45s forwards;
+    }
+
+    @keyframes drawShared {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+
+    @keyframes drawStub {
+      from { opacity: 0; transform: scaleX(0); }
+      to { opacity: 1; transform: scaleX(1); }
+    }
+
+    @keyframes drawRetry {
+      from { opacity: 0; transform: scaleX(0); }
+      to { opacity: 1; transform: scaleX(1); }
+    }
+
+    @keyframes drawRecover {
+      from { opacity: 0; transform: scaleX(0); }
+      to { opacity: 1; transform: scaleX(1); }
+    }
+
+    @keyframes popNode {
+      from { opacity: 0; transform: scale(0.75); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+      .progress-shared,
+      .progress-fail-stub,
+      .node-x,
+      .progress-retry,
+      .progress-recover,
+      .node-check {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    }
+
+    .diagram-footer {
+      padding: 10px 16px;
+      border-top: 1px solid var(--rule);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--ink-muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      background: var(--bg);
+    }
+
+    /* Section Scaffolding */
+    .section {
+      padding: 64px 0;
+      border-bottom: 1px solid var(--rule-strong);
+    }
+
+    .section-head {
+      margin-bottom: 40px;
+      align-items: end;
+    }
+
+    .section-num-col {
+      grid-column: span 3;
+    }
+
+    .section-num {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      border-top: 2px solid var(--ink);
+      padding-top: 8px;
+      display: inline-block;
+    }
+
+    .section-title-col {
+      grid-column: span 9;
+    }
+
+    h2 {
+      font-family: var(--font-serif);
+      font-weight: 400;
+      font-size: clamp(1.85rem, 3.4vw, 2.75rem);
+      line-height: 1.12;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+
+    .section-lead {
+      margin: 14px 0 0;
+      color: var(--ink-muted);
+      max-width: 62ch;
+      font-size: 1.02rem;
+    }
+
+    /* Section 01: Side-by-Side Agent Comparison */
+    .agent-panel {
+      grid-column: span 6;
+      border: 1px solid var(--rule-strong);
+      background: var(--bg-card);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .agent-panel-top {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--rule-strong);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: var(--bg-elevated);
+    }
+
+    .tag-baseline {
+      color: var(--fault);
+      font-weight: 700;
+    }
+
+    .tag-resilient {
+      color: var(--pass);
+      font-weight: 700;
+    }
+
+    .agent-panel-body {
+      padding: 28px 24px;
+    }
+
+    .big-stat-row {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 16px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .big-stat {
+      font-family: var(--font-serif);
+      font-size: clamp(3.25rem, 6vw, 4.75rem);
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      font-weight: 400;
+    }
+
+    .big-stat-sub {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--ink-muted);
+      line-height: 1.4;
+    }
+
+    .big-stat-sub strong {
+      display: block;
+      color: var(--ink);
+      font-size: 0.95rem;
+    }
+
+    .agent-desc {
+      margin: 0 0 20px;
+      color: var(--ink);
+      font-size: 0.98rem;
+    }
+
+    .spec-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border-top: 1px solid var(--rule);
+    }
+
+    .spec-list li {
+      padding: 9px 0;
+      border-bottom: 1px solid var(--rule);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--ink-muted);
+    }
+
+    .spec-list li span:first-child {
+      color: var(--ink);
+    }
+
+    .spec-list li:last-child {
+      border-bottom: none;
+    }
+
+    .condition-strip {
+      grid-column: span 12;
+      border: 1px solid var(--rule-strong);
+      background: var(--bg-elevated);
+      padding: 16px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 16px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+    }
+
+    .condition-strip strong {
+      color: var(--ink);
+      text-transform: uppercase;
+    }
+
+    /* Section 02: Four Fault Types Grid */
+    .fault-card {
+      grid-column: span 6;
+      border: 1px solid var(--rule-strong);
+      background: var(--bg-card);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .fault-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--rule);
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+    }
+
+    .fault-code {
+      background: var(--fault-bg);
+      color: var(--fault);
+      border: 1px solid var(--fault);
+      padding: 2px 8px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .fault-vector {
+      color: var(--ink-muted);
+      text-transform: uppercase;
+    }
+
+    .fault-card h3 {
+      font-family: var(--font-serif);
+      font-weight: 400;
+      font-size: 1.45rem;
+      line-height: 1.2;
+      margin: 0 0 10px;
+    }
+
+    .fault-card p {
+      margin: 0;
+      color: var(--ink-muted);
+      font-size: 0.96rem;
+    }
+
+    /* Section 03: Ground Truth, Not Vibes */
+    .ground-copy {
+      grid-column: span 5;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .ground-copy p {
+      margin: 0 0 16px;
+      font-size: 1rem;
+      color: var(--ink);
+    }
+
+    .metrics-strip {
+      border-top: 1px solid var(--rule-strong);
+      padding-top: 16px;
+    }
+
+    .metrics-label {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink-muted);
+      margin-bottom: 10px;
+    }
+
+    .metrics-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .metric-tag {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      padding: 4px 8px;
+      border: 1px solid var(--rule);
+      background: var(--bg-card);
+      color: var(--ink);
+    }
+
+    .lab-report {
+      grid-column: span 7;
+      border: 1px solid var(--rule-strong);
+      background: var(--bg-card);
+    }
+
+    .lab-report-head {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--rule-strong);
+      background: var(--bg-elevated);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+    }
+
+    .lab-report-meta {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--rule);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--ink-muted);
+    }
+
+    .lab-report-meta strong {
+      display: block;
+      color: var(--ink);
+      font-size: 0.78rem;
+      margin-top: 2px;
+    }
+
+    .checklist {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .checklist li {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--rule);
+      display: grid;
+      grid-template-columns: 76px 1fr auto;
+      align-items: center;
+      gap: 14px;
+      font-size: 0.92rem;
+    }
+
+    .checklist li:last-child {
+      border-bottom: none;
+    }
+
+    .check-id {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--ink-muted);
+    }
+
+    .check-assertion {
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    .check-assertion code {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--ink-muted);
+      margin-top: 2px;
+      font-weight: 400;
+    }
+
+    .check-pass {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--pass);
+      background: var(--pass-bg);
+      border: 1px solid var(--pass);
+      padding: 3px 8px;
+      letter-spacing: 0.05em;
+    }
+
+    .lab-report-foot {
+      padding: 11px 18px;
+      border-top: 1px solid var(--rule-strong);
+      background: var(--bg);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--ink-muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* Section 04: What the Numbers Say, Honestly */
+    .data-table-wrap {
+      grid-column: span 7;
+      border: 1px solid var(--rule-strong);
+      background: var(--bg-card);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    th {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--rule-strong);
+      background: var(--bg-elevated);
+      color: var(--ink);
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--rule);
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr.highlight-row {
+      background: var(--fault-bg);
+    }
+
+    .val-bad {
+      color: var(--fault);
+      font-weight: 700;
+    }
+
+    .val-good {
+      color: var(--pass);
+      font-weight: 700;
+    }
+
+    .honesty-panel {
+      grid-column: span 5;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .explainer-box {
+      border: 1px solid var(--rule-strong);
+      background: var(--bg-card);
+      padding: 22px;
+    }
+
+    .explainer-box h3 {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 0 0 10px;
+      color: var(--ink);
+    }
+
+    .explainer-box p {
+      margin: 0;
+      font-size: 0.94rem;
+      color: var(--ink-muted);
+    }
+
+    .caveat-box {
+      border: 1px solid var(--fault);
+      background: var(--fault-bg);
+      padding: 22px;
+    }
+
+    .caveat-box h3 {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 0 0 10px;
+      color: var(--fault);
+    }
+
+    .caveat-box p {
+      margin: 0;
+      font-size: 0.94rem;
+      color: var(--ink);
+    }
+
+    /* Section 05: Final CTA */
+    .cta-section {
+      padding: 72px 0;
+      border-bottom: 1px solid var(--rule-strong);
+      background: var(--bg-elevated);
+    }
+
+    .cta-copy {
+      grid-column: span 8;
+    }
+
+    .cta-copy h2 {
+      margin-bottom: 12px;
+    }
+
+    .cta-copy p {
+      margin: 0;
+      color: var(--ink-muted);
+      max-width: 56ch;
+    }
+
+    .cta-action {
+      grid-column: span 4;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    /* Footer */
+    footer {
+      padding: 40px 0 56px;
+      font-size: 0.86rem;
+      color: var(--ink-muted);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .footer-col {
+      grid-column: span 4;
+    }
+
+    .footer-label {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    footer p {
+      margin: 0;
+      line-height: 1.55;
+    }
+
+    footer a {
+      color: var(--ink);
+      text-underline-offset: 3px;
+    }
+
+    footer a:hover {
+      color: var(--fault);
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 960px) {
+      .hero-copy,
+      .hero-visual,
+      .section-num-col,
+      .section-title-col,
+      .agent-panel,
+      .fault-card,
+      .ground-copy,
+      .lab-report,
+      .data-table-wrap,
+      .honesty-panel,
+      .cta-copy,
+      .cta-action {
+        grid-column: span 12;
+      }
+
+      .section-num-col {
+        margin-bottom: -24px;
+      }
+
+      .footer-col {
+        grid-column: span 12;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 0 16px;
+      }
+
+      .hero {
+        padding: 36px 0 44px;
+      }
+
+      .section {
+        padding: 44px 0;
+      }
+
+      .lab-report-meta {
+        grid-template-columns: 1fr;
+      }
+
+      .checklist li {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .check-pass {
+        justify-self: start;
+      }
+
+      .btn-primary,
+      .btn-secondary {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
-<header class="topbar">
-  <div class="brand">
-    <h1>Chaos<span class="accent">Bench</span></h1>
-    <p class="tagline">The Crash-Test Laboratory for AI Agents — dashboard</p>
-  </div>
-  <div class="top-right">
-    <span id="mode-badge" class="badge">…</span>
-    <label class="dataset-switch" for="dataset-select">Dataset
-      <select id="dataset-select">
-        <option value="sample_results.json">Mock fixture (contract v1)</option>
-        <option value="real_results_granite.json">Real LLM — Granite 4.0 H micro</option>
-      </select>
-    </label>
-  </div>
-</header>
 
-<main>
-  <section id="meta" class="meta"></section>
-
-  <section>
-    <h2>Overview — per agent</h2>
-    <div id="cards" class="cards"></div>
-  </section>
-
-  <section>
-    <h2>Baseline vs Resilient</h2>
-    <table id="compare-table" class="table"></table>
-  </section>
-
-  <section>
-    <h2>Per-scenario breakdown</h2>
-    <table id="scenario-table" class="table"></table>
-    <p class="note">Recovery = faults recovered ÷ faults injected, per scenario.
-    Scenarios with no injected faults show n/a. pass^k = all repetitions of the
-    scenario passed.</p>
-  </section>
-
-  <section>
-    <h2>Trace timeline</h2>
-    <div class="trace-controls">
-      <label>Scenario
-        <select id="run-scenario"></select>
-      </label>
-      <label>Agent
-        <select id="run-agent">
-          <option value="baseline">baseline</option>
-          <option value="resilient">resilient</option>
-        </select>
-      </label>
-      <label>Rep
-        <select id="run-rep">
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-        </select>
-      </label>
-      <button id="replay-btn" type="button">Failure Replay</button>
-      <span id="replay-note" class="note"></span>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="#" class="brand-mark">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <span>CHAOSBENCH // AGENT RELIABILITY LAB</span>
+      </a>
+      <div class="topbar-meta">
+        <span>MODEL: GRANITE-4.0-H-MICRO</span>
+        <span>DATASET: 30 RECORDED RUNS</span>
+      </div>
     </div>
-    <div id="run-summary" class="run-summary"></div>
-    <div id="timeline" class="timeline"></div>
-    <div id="evaluation" class="evaluation"></div>
-  </section>
+  </header>
 
-  <section>
-    <h2>Failure Replay</h2>
-    <p class="note">Replay re-runs a run with the same seed and fault against the
-    live contract-v1 backend (<code>POST /api/runs/{run_id}/replay</code>).
-    Replay runs are excluded from the benchmark summary. Replay needs a live
-    backend: open this page with <code>?api=&lt;base-url&gt;</code>
-    (e.g. <code>?api=http://127.0.0.1:8000</code>) to enable Replay. Nothing is
-    simulated client-side.</p>
-    <div id="replay-result"></div>
-  </section>
-</main>
+  <main>
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="container grid-12">
+        <div class="hero-copy">
+          <div>
+            <div class="eyebrow">Crash-Test Laboratory for AI Agents</div>
+            <h1 id="hero-heading">Test agents when the backend breaks.</h1>
+            <p class="tagline">Don't just test what AI agents can do. Test what happens when things go wrong.</p>
+          </div>
+          <div class="hero-actions">
+            <a href="ui/" class="btn-primary">Explore benchmark</a>
+            <a href="https://github.com/Utpal-Kalita/chaosbench-agent-reliability" class="btn-secondary">View source</a>
+          </div>
+        </div>
 
-<footer>
-  <p>ChaosBench — Geek Room Global AI Hackathon 2026, Theme 2 (agent benchmarking).
-  Contract v1. See <code>CONTRACT.md</code> for the data contract, sources and gaps.</p>
-</footer>
+        <aside class="hero-visual" aria-label="Crash test run divergence diagram showing baseline agent stopping at fault injection and resilient agent recovering">
+          <div class="diagram-header">
+            <span>FIG 00 // ILLUSTRATIVE, NOT A MEASUREMENT</span>
+            <span>SIMULATED FAULT</span>
+          </div>
 
-<script src="data.js"></script>
-<script src="live.js"></script>  <!-- INTEGRATION: only active with ?api=<base-url> -->
-<script src="app.js"></script>
+          <div class="diagram-stage">
+            <div class="axis-labels">
+              <span>T+0 START</span>
+              <span>FAULT INJECT</span>
+              <span>DB ASSERT</span>
+            </div>
+
+            <div class="timeline-canvas">
+              <div class="fault-badge">HTTP 503</div>
+              <div class="fault-line" aria-hidden="true"></div>
+
+              <div class="track">
+                <div class="track-meta">
+                  <span class="track-name">Baseline Agent</span>
+                  <span class="track-status-fail">HALTED [X]</span>
+                </div>
+                <div class="track-rail">
+                  <div class="progress-shared"></div>
+                  <div class="progress-fail-stub"></div>
+                  <div class="node-x" aria-hidden="true">X</div>
+                </div>
+              </div>
+
+              <div class="track">
+                <div class="track-meta">
+                  <span class="track-name">Resilient Agent</span>
+                  <span class="track-status-pass">RECOVERED [OK]</span>
+                </div>
+                <div class="track-rail">
+                  <div class="progress-shared"></div>
+                  <div class="progress-retry"></div>
+                  <div class="progress-recover"></div>
+                  <div class="node-check" aria-hidden="true">&#10003;</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="diagram-footer">
+            <span>SIMULATED REFUND ENGINE. NOT PRODUCTION FAILURE COVERAGE.</span>
+            <span>DB STATE VERIFIED</span>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- SECTION 01: TWO AGENTS -->
+    <section class="section" aria-labelledby="sec-01-heading">
+      <div class="container">
+        <div class="grid-12 section-head">
+          <div class="section-num-col">
+            <span class="section-num">Section 01</span>
+          </div>
+          <div class="section-title-col">
+            <h2 id="sec-01-heading">Two agents. Same task. Same conditions.</h2>
+            <p class="section-lead">Both agents run on identical tasks inside an identical simulated customer-support refund backend using synthetic data while a seeded chaos engine injects failures.</p>
+          </div>
+        </div>
+
+        <div class="grid-12">
+          <article class="agent-panel">
+            <div class="agent-panel-top">
+              <span>AGENT A // CONTROL</span>
+              <span class="tag-baseline">BASELINE</span>
+            </div>
+            <div class="agent-panel-body">
+              <div class="big-stat-row">
+                <span class="big-stat">12/15</span>
+                <div class="big-stat-sub">
+                  <strong>80% RUN PASS RATE</strong>
+                  <span>4/5 scenarios at pass^3</span>
+                </div>
+              </div>
+              <p class="agent-desc">Model plus tools with no recovery logic. Operates normally on clean paths, but stalls or fails when tool calls return transient errors.</p>
+              <ul class="spec-list">
+                <li><span>Retry Strategy</span><span>None</span></li>
+                <li><span>State Verification</span><span>None</span></li>
+                <li><span>Idempotency Keys</span><span>Absent</span></li>
+                <li><span>Prompt Boundary</span><span>Unwrapped</span></li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="agent-panel">
+            <div class="agent-panel-top">
+              <span>AGENT B // HARDENED</span>
+              <span class="tag-resilient">RESILIENT</span>
+            </div>
+            <div class="agent-panel-body">
+              <div class="big-stat-row">
+                <span class="big-stat">15/15</span>
+                <div class="big-stat-sub">
+                  <strong>100% RUN PASS RATE</strong>
+                  <span>5/5 scenarios at pass^3</span>
+                </div>
+              </div>
+              <p class="agent-desc">Same underlying model and tool definitions, wrapped in deterministic reliability and safety controls around every tool boundary.</p>
+              <ul class="spec-list">
+                <li><span>Retry Strategy</span><span>Bounded retries + error classification</span></li>
+                <li><span>State Verification</span><span>Checks DB state before re-submitting</span></li>
+                <li><span>Idempotency Keys</span><span>Enforced on mutating calls</span></li>
+                <li><span>Input &amp; Action Guards</span><span>Untrusted-data wrapping + scope guard</span></li>
+              </ul>
+            </div>
+          </article>
+
+          <div class="condition-strip">
+            <span><strong>Shared Model:</strong> granite-4.0-h-micro</span>
+            <span><strong>Environment:</strong> Simulated customer-support refund backend</span>
+            <span><strong>Execution:</strong> 5 scenarios &times; 2 agents &times; 3 repetitions</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 02: FOUR FAULT TYPES -->
+    <section class="section" aria-labelledby="sec-02-heading">
+      <div class="container">
+        <div class="grid-12 section-head">
+          <div class="section-num-col">
+            <span class="section-num">Section 02</span>
+          </div>
+          <div class="section-title-col">
+            <h2 id="sec-02-heading">Four ways to break an agent</h2>
+            <p class="section-lead">The seeded chaos engine deterministically injects four failure classes into tool responses and order records during execution.</p>
+          </div>
+        </div>
+
+        <div class="grid-12">
+          <article class="fault-card">
+            <div class="fault-card-header">
+              <span class="fault-code">FAULT 01 // HTTP 503</span>
+              <span class="fault-vector">Availability</span>
+            </div>
+            <div>
+              <h3>Tool outage</h3>
+              <p>The refund API returns an HTTP 503 service unavailable error instead of processing the request.</p>
+            </div>
+          </article>
+
+          <article class="fault-card">
+            <div class="fault-card-header">
+              <span class="fault-code">FAULT 02 // PARSE</span>
+              <span class="fault-vector">Contract</span>
+            </div>
+            <div>
+              <h3>Malformed JSON response</h3>
+              <p>A tool returns truncated or syntactically invalid JSON payload data that breaks naive response parsing.</p>
+            </div>
+          </article>
+
+          <article class="fault-card">
+            <div class="fault-card-header">
+              <span class="fault-code">FAULT 03 // INJECTION</span>
+              <span class="fault-vector">Security</span>
+            </div>
+            <div>
+              <h3>Prompt injection in order note</h3>
+              <p>Untrusted order text carries hidden instructions telling the model to ignore prior rules and refund another order.</p>
+            </div>
+          </article>
+
+          <article class="fault-card">
+            <div class="fault-card-header">
+              <span class="fault-code">FAULT 04 // AMBIGUOUS 503</span>
+              <span class="fault-vector">Consistency</span>
+            </div>
+            <div>
+              <h3>Commit-then-503</h3>
+              <p>The refund commits in the database before the response fails with HTTP 503, causing a blind retry to issue a duplicate refund.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 03: GROUND TRUTH, NOT VIBES -->
+    <section class="section" aria-labelledby="sec-03-heading">
+      <div class="container">
+        <div class="grid-12 section-head">
+          <div class="section-num-col">
+            <span class="section-num">Section 03</span>
+          </div>
+          <div class="section-title-col">
+            <h2 id="sec-03-heading">Ground truth, not vibes</h2>
+            <p class="section-lead">Outcomes are judged strictly by inspecting the backend database state after the run finishes—never by trusting what the agent claims in chat, and never with an LLM judge.</p>
+          </div>
+        </div>
+
+        <div class="grid-12">
+          <div class="ground-copy">
+            <div>
+              <p>An agent can apologize politely while leaving a customer unrefunded, or claim success after issuing two refunds for the same order. ChaosBench ignores conversational self-reporting and queries the database directly.</p>
+              <p>Every recorded run preserves the complete raw execution trace—every prompt, tool call, injected fault, retry, and final assertion—so failures can be audited step by step.</p>
+            </div>
+
+            <div class="metrics-strip">
+              <div class="metrics-label">Recorded Telemetry &amp; Assertions</div>
+              <div class="metrics-tags">
+                <span class="metric-tag">task success</span>
+                <span class="metric-tag">recovery rate</span>
+                <span class="metric-tag">pass^3</span>
+                <span class="metric-tag">tool calls</span>
+                <span class="metric-tag">steps</span>
+                <span class="metric-tag">tokens</span>
+                <span class="metric-tag">latency</span>
+                <span class="metric-tag">policy violations</span>
+                <span class="metric-tag">duplicate refunds</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="lab-report" role="region" aria-label="Mock post-run database verification checklist">
+            <div class="lab-report-head">
+              <span>LAB REPORT // ILLUSTRATIVE LAYOUT, PSEUDO-QUERIES</span>
+              <span>NO LLM JUDGE</span>
+            </div>
+            <div class="lab-report-meta">
+              <div>
+                <span>EVALUATION METHOD</span>
+                <strong>Direct SQLite State Query</strong>
+              </div>
+              <div>
+                <span>TRACE CAPTURE</span>
+                <strong>Full Raw Execution Log</strong>
+              </div>
+              <div>
+                <span>VERDICT BASIS</span>
+                <strong>4 Deterministic Invariants</strong>
+              </div>
+            </div>
+            <ul class="checklist">
+              <li>
+                <span class="check-id">CHK-01</span>
+                <span class="check-assertion">
+                  Refund exists for target order
+                  <code>SELECT count(*) FROM refunds WHERE order_id = target_id</code>
+                </span>
+                <span class="check-pass">CHECKED</span>
+              </li>
+              <li>
+                <span class="check-id">CHK-02</span>
+                <span class="check-assertion">
+                  Refund amount matches eligible total
+                  <code>assert refund.amount == expected_refund_amount</code>
+                </span>
+                <span class="check-pass">CHECKED</span>
+              </li>
+              <li>
+                <span class="check-id">CHK-03</span>
+                <span class="check-assertion">
+                  No duplicate refund on target order
+                  <code>assert duplicate_refunds == 0</code>
+                </span>
+                <span class="check-pass">CHECKED</span>
+              </li>
+              <li>
+                <span class="check-id">CHK-04</span>
+                <span class="check-assertion">
+                  No refund issued on unauthorized orders
+                  <code>assert count(refunds WHERE order_id != target_id) == 0</code>
+                </span>
+                <span class="check-pass">CHECKED</span>
+              </li>
+            </ul>
+            <div class="lab-report-foot">
+              <span>AGENT TEXT OUTPUT: IGNORED FOR SCORING</span>
+              <span>EVERY RUN IS SCORED ON THESE 4 INVARIANTS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 04: WHAT THE NUMBERS SAY, HONESTLY -->
+    <section class="section" aria-labelledby="sec-04-heading">
+      <div class="container">
+        <div class="grid-12 section-head">
+          <div class="section-num-col">
+            <span class="section-num">Section 04</span>
+          </div>
+          <div class="section-title-col">
+            <h2 id="sec-04-heading">What the numbers say, honestly</h2>
+            <p class="section-lead">Recorded benchmark results across 30 real runs on granite-4.0-h-micro (5 scenarios &times; 2 agents &times; 3 repetitions).</p>
+          </div>
+        </div>
+
+        <div class="grid-12">
+          <div class="data-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Benchmark Slice</th>
+                  <th scope="col">Baseline Agent</th>
+                  <th scope="col">Resilient Agent</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Total Runs Passed (30 runs)</td>
+                  <td>12 / 15 (80%)</td>
+                  <td class="val-good">15 / 15 (100%)</td>
+                </tr>
+                <tr>
+                  <td>Scenarios Passed at pass^3</td>
+                  <td>4 / 5 scenarios</td>
+                  <td class="val-good">5 / 5 scenarios</td>
+                </tr>
+                <tr class="highlight-row">
+                  <td>CB-02: API Outage Scenario</td>
+                  <td class="val-bad">0 / 3 reps</td>
+                  <td class="val-good">3 / 3 reps</td>
+                </tr>
+                <tr>
+                  <td>Remaining 4 Scenarios Combined</td>
+                  <td>12 / 12 reps</td>
+                  <td>12 / 12 reps</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="honesty-panel">
+            <div class="explainer-box">
+              <h3>How pass^3 works</h3>
+              <p>A scenario passes under <strong>pass^3</strong> only if all 3 repetitions succeed. One fluke recovery does not count; the agent must survive the injected condition consistently across every repetition.</p>
+            </div>
+
+            <div class="caveat-box">
+              <h3>Methodological Caveat</h3>
+              <p>Only the API-outage scenario (CB-02) separated the two agents in this run set (0/3 vs 3/3). These numbers come from one environment, 3 repetitions per task, and a small synthetic demonstration dataset—useful signal, not statistical proof.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="cta-section" aria-labelledby="cta-heading">
+      <div class="container grid-12">
+        <div class="cta-copy">
+          <div class="eyebrow">Recorded Traces &amp; Assertions</div>
+          <h2 id="cta-heading">Inspect all 30 runs in the benchmark viewer.</h2>
+          <p>Examine the raw tool traces, fault injection points, token counts, and database state checks for both agents across every scenario.</p>
+        </div>
+        <div class="cta-action">
+          <a href="ui/" class="btn-primary">Explore benchmark</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-grid">
+      <div class="footer-col">
+        <span class="footer-label">Execution Mode</span>
+        <p>This hosted demo is read-only and serves recorded real runs, execution traces, and database checks. Live Failure Replay runs only in a local install.</p>
+      </div>
+      <div class="footer-col">
+        <span class="footer-label">Hackathon Context</span>
+        <p>Built solo for the Geek Room Global AI Hackathon 2026, Theme 2 (framework-independent agent benchmarking). <a href="https://github.com/Utpal-Kalita/chaosbench-agent-reliability">Source on GitHub</a>.</p>
+      </div>
+      <div class="footer-col">
+        <span class="footer-label">AI-Use Disclosure</span>
+        <p>Built with AI assistance during development and documentation.</p>
+      </div>
+    </div>
+  </footer>
+
+<script>if(/github\.io$/.test(location.hostname)){document.querySelectorAll('a[href="ui/"]').forEach(function(a){a.setAttribute("href","app.html")})}</script>
 </body>
 </html>
