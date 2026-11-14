@@ -1936,8 +1936,8 @@
             bucket.resilient.some(function (e) { return e.category === "injected" || e.category === "error"; });
           if (hasFaultAtStep) {
             const hasInjectedAtStep =
-              bucket.baseline.some(function (e) { return e.category === "injected"; }) ||
-              bucket.resilient.some(function (e) { return e.category === "injected"; });
+              bucket.baseline.some(function (e) { return e.category === "injected" || e.badgeText === "INJECTED FAULT RESPONSE"; }) ||
+              bucket.resilient.some(function (e) { return e.category === "injected" || e.badgeText === "INJECTED FAULT RESPONSE"; });
             axisCell.appendChild(createTextEl("span", "axis-fault-pin", hasInjectedAtStep ? "INJECTED" : "TOOL ERROR"));
           }
           row.appendChild(axisCell);
