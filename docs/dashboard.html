@@ -1182,7 +1182,7 @@
           <div class="timeline-legend">
             <span class="legend-item"><span class="legend-dot legend-dot--fault"></span>Injected Fault</span>
             <span class="legend-item"><span class="legend-dot legend-dot--error"></span>Tool Error</span>
-            <span class="legend-item"><span class="legend-dot legend-dot--recovery"></span>Recovery / Idempotency</span>
+            <span class="legend-item"><span class="legend-dot legend-dot--recovery"></span>Success after error on same tool</span>
             <button type="button" class="toggle-steps-btn" id="toggle-steps-btn">Show all steps</button>
           </div>
         </div>
@@ -1745,20 +1745,12 @@
               }
               if (toolName && toolHadPriorError[toolName]) {
                 category = "recovery";
-                badgeText = "RECOVERY";
+                badgeText = "SUCCESS AFTER ERROR (SAME TOOL)";
                 delete toolHadPriorError[toolName];
-              } else if (toolName && seenTools[toolName] && /get_order|check_refund|verify|status|idempot/i.test(toolName)) {
-                category = "recovery";
-                badgeText = "STATE VERIFICATION";
               }
             }
             if (toolName) {
               seenTools[toolName] = true;
-            }
-          } else if (evType === "tool_call") {
-            if (toolName && /check_refund|verify_state|idempot/i.test(toolName)) {
-              category = "recovery";
-              badgeText = "IDEMPOTENCY CHECK";
             }
           } else if (evType === "final" || idx === list.length - 1) {
             category = "final";
