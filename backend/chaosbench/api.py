@@ -56,7 +56,10 @@ def replay(run_id: str):
 
 
 @app.get("/", include_in_schema=False)
-def index(): return FileResponse(os.path.join(os.path.dirname(__file__), "static", "index.html"))
+def index():
+    landing = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "landing.html")
+    if os.path.isfile(landing): return FileResponse(landing)
+    return FileResponse(os.path.join(os.path.dirname(__file__), "static", "index.html"))
 
 _fe = os.path.join(os.path.dirname(__file__), "..", "..", "frontend")
 if os.path.isdir(_fe):   # standalone dashboard, served at /ui/?api=<this server>
