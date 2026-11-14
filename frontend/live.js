@@ -4,6 +4,7 @@
    so nothing is read from a fixture. Replays are excluded from the dataset, matching the backend summary. */
 (function () {
   var api = new URLSearchParams(window.location.search).get('api');
+  if (!api && /^\/ui(\/|$)/.test(window.location.pathname)) api = window.location.origin;   // served by the backend itself (same origin)
   if (!api || window.location.protocol.indexOf('http') !== 0) return;
   api = api.replace(/\/+$/, '');
   var realFetch = window.fetch.bind(window);
