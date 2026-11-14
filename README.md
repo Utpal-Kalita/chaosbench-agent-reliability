@@ -7,9 +7,10 @@ ChaosBench runs two agents on identical tasks, in an identical simulated custome
 injects failures. Outcomes are judged by inspecting the database, not by trusting what the agent says.
 
 ## Live demo
-Static dashboard of the recorded real runs (30 runs, granite-4.0-h-micro), with per-run traces and ground-truth checks: https://utpal-kalita.github.io/chaosbench-agent-reliability/
+- Hosted with the live API (free instance, can take about a minute to wake after idle): https://chaosbench-agent-reliability.onrender.com/ (landing page), dashboard at https://chaosbench-agent-reliability.onrender.com/ui/dashboard.html
+- Static copy with all 30 recorded traces bundled (GitHub Pages, no backend): https://utpal-kalita.github.io/chaosbench-agent-reliability/ , dashboard at https://utpal-kalita.github.io/chaosbench-agent-reliability/dashboard.html
 
-It is read-only and hosted on GitHub Pages. The Failure Replay button needs the local backend, so it is disabled there. A dataset dropdown also offers the scripted mock fixture, labelled as mock.
+Both show the 30 recorded real runs (granite-4.0-h-micro) with per-run traces and ground-truth checks. They are read-only: the Failure Replay control is disabled because replay would call a live model. The original dashboard remains at /ui/ on the hosted service. The dashboard frontend was generated with an AI assistant and then integrated and tested against the real data (AI use disclosed).
 
 ## What is in this repo
 - `backend/chaosbench/sim.py` - simulated refund backend (SQLite, synthetic data, no real payments or customers).
