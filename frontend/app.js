@@ -310,7 +310,7 @@ if (typeof document !== 'undefined') {
 
   function init() {
     var p = params();
-    state.apiBase = p.get('api') || null;
+    state.apiBase = p.get('api') || (/^\/ui(\/|$)/.test(window.location.pathname) ? window.location.origin : null);
     var file = p.get('data') || (state.apiBase ? 'real_results_granite.json' : 'sample_results.json');  // INTEGRATION PATCH: live mode defaults to the live dataset
     if (DATASETS.indexOf(file) === -1) file = 'sample_results.json';
     document.getElementById('dataset-select').value = file;
