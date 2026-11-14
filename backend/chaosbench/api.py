@@ -59,5 +59,5 @@ def replay(run_id: str):
 def index(): return FileResponse(os.path.join(os.path.dirname(__file__), "static", "index.html"))
 
 _fe = os.path.join(os.path.dirname(__file__), "..", "..", "frontend")
-if os.path.isdir(_fe):   # Muse's standalone dashboard, served at /ui/?api=<this server>
+if os.path.isdir(_fe):   # standalone dashboard, served at /ui/?api=<this server>
     app.mount("/ui", StaticFiles(directory=_fe, html=True), name="ui")
