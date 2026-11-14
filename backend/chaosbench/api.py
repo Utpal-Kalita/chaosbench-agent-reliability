@@ -11,6 +11,11 @@ from .runner import run_one, make_client
 app = FastAPI(title="ChaosBench")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 _db = os.environ.get("CB_DB", "results.db")
+_seed_sql = os.environ.get("CB_SEED_SQL")   # hosted demo: build the DB from a recorded-results dump at startup
+if _seed_sql and not os.path.exists(_db):
+    import sqlite3
+    _c = sqlite3.connect(_db); _c.executescript(open(_seed_sql, encoding="utf-8").read()); _c.commit(); _c.close()
+READONLY = os.environ.get("CB_READONLY") == "1"
 if os.environ.get("CB_MODE", "mock") != "mock" and not os.path.exists(_db):
     raise RuntimeError(f"CB_MODE={os.environ['CB_MODE']} needs an existing results database, but CB_DB={_db!r} does not exist. "
                        "Restore one first, e.g. sqlite3 restored.db < results/real_granite-4.0-h-micro.sql")
@@ -42,6 +47,8 @@ def run(run_id: str):
 
 @app.post("/api/runs/{run_id}/replay")
 def replay(run_id: str):
+    if READONLY:
+        raise HTTPException(403, "Replay is disabled on this hosted demo because it would call a live model. The recorded runs, traces and ground-truth checks are all real; run the backend locally to replay (see the README).")
     r = store.get(run_id)
     if not r: raise HTTPException(404, "run not found")
     new = run_one(r["scenario_id"], r["agent"], r["rep"], make_client(r["mode"]), seed=r["seed"], replay_of=run_id)
