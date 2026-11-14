@@ -49,3 +49,18 @@ def test_duplicate_check_is_labelled_as_a_ceiling():
     assert chk["no_duplicate_refund"]["actual"] == 0
     assert chk["no_duplicate_refund"]["expected"].startswith("<= 1")
     assert chk["refund_exists_for_target_order"]["passed"] is False
+
+
+def test_hosted_readonly_mode_seeds_db_and_blocks_replay(tmp_path, monkeypatch):
+    sql = os.path.join(os.path.dirname(__file__), "..", "results", "real_granite-4.0-h-micro.sql")
+    monkeypatch.setenv("CB_DB", str(tmp_path / "h.db")); monkeypatch.setenv("CB_MODE", "llm")
+    monkeypatch.setenv("CB_SEED_SQL", sql); monkeypatch.setenv("CB_READONLY", "1")
+    import chaosbench.api as api
+    api = importlib.reload(api)
+    c = TestClient(api.app)
+    s = c.get("/api/summary").json()
+    assert s["mode"] == "llm" and s["total_runs"] == 30
+    rid = c.get("/api/runs").json()[0]["run_id"]
+    r = c.post(f"/api/runs/{rid}/replay")
+    assert r.status_code == 403 and "disabled" in r.json()["detail"]
+    assert len(c.get("/api/runs").json()) == 30
