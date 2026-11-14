@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ChaosBench</title>
+<style>
+:root{--bg:#0b0d10;--panel:#12161b;--line:#222a33;--tx:#e6e9ee;--mut:#8a94a3;--ok:#3ddc97;--bad:#ff5d6c;--warn:#f5b84b;--acc:#7aa2ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:28px 32px 8px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px}
+h1{margin:0;font-size:26px;letter-spacing:-.02em}h1 span{color:var(--acc)}
+.sub{color:var(--mut);margin-top:2px}.badge{padding:3px 10px;border:1px solid var(--line);border-radius:99px;color:var(--mut);font-size:12px}
+.badge.mock{color:var(--warn);border-color:var(--warn)}.badge.real{color:var(--ok);border-color:var(--ok)}
+main{padding:8px 32px 48px;max-width:1280px;margin:auto}
+section{margin-top:22px}h2{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--mut);font-weight:600;margin:0 0 10px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.card h3{margin:0 0 8px;font-size:15px;display:flex;justify-content:space-between}
+.big{font-size:38px;font-weight:700;letter-spacing:-.03em}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;color:var(--mut);margin-top:8px}.grid2 b{color:var(--tx);font-weight:600}
+table{width:100%;min-width:640px;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}th{color:var(--mut);font-weight:600;font-size:12px}
+tr:last-child td{border-bottom:0}tbody tr.run{cursor:pointer}tbody tr.run:hover{background:#171c23}
+.pill{padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600}.pass{background:#12372a;color:var(--ok)}.fail{background:#3b1820;color:var(--bad)}
+.fault{color:var(--warn)}.mut{color:var(--mut)}
+#detail{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;display:none}
+.tl{border-left:2px solid var(--line);margin:12px 0 0 6px}.ev{padding:6px 0 6px 16px;position:relative}.ev:before{content:"";position:absolute;left:-6px;top:13px;width:10px;height:10px;border-radius:50%;background:var(--line)}
+.ev.model_request:before{background:var(--acc)}.ev.tool_response.ok:before{background:var(--ok)}.ev.tool_response.failed:before,.ev.fault_injected:before,.ev.model_error:before{background:var(--bad)}.ev.retry:before{background:var(--warn)}
+.ev code{color:var(--mut);display:block;white-space:pre-wrap;word-break:break-all;font-size:12px}.chk{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+button{background:var(--acc);color:#07101f;border:0;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer}button:disabled{opacity:.5}
+.wrap{overflow-x:auto;border-radius:12px}@media(max-width:700px){header{padding:18px 14px 4px}main{padding:4px 14px 40px}h1{font-size:22px}.big{font-size:32px}.grid2{grid-template-columns:1fr 1fr}#detail{padding:12px}}
+.cell{display:flex;gap:6px}.note{color:var(--mut);font-size:12px;margin-top:6px}
+</style></head><body>
+<header><div><h1>Chaos<span>Bench</span></h1><div class="sub">Crash-test lab for AI agents. Same task, same model, injected failures, database-verified outcomes.</div></div><div id="meta"></div></header>
+<main>
+<section><h2>Agents</h2><div class="cards" id="cards"></div></section>
+<section id="detail"></section>
+<section><h2>pass^3 by scenario (all 3 reps must pass)</h2><div class="wrap"><table><thead><tr><th>Scenario</th><th>Fault</th><th>Baseline</th><th>Resilient</th></tr></thead><tbody id="matrix"></tbody></table></div></section>
+<section><h2>Runs <span class="mut" id="count"></span></h2><div class="wrap"><table><thead><tr><th>Run</th><th>Scenario</th><th>Agent</th><th>Rep</th><th>Result</th><th>Tool calls</th><th>Faults (recovered)</th><th>Retries</th><th>Tokens</th><th>Latency</th></tr></thead><tbody id="runs"></tbody></table></div></section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!==undefined)e.textContent=x;return e};
+const pct=v=>v==null?'n/a':Math.round(v*100)+'%';
+const j=async(u,o)=>{const r=await fetch(u,o);if(!r.ok)throw new Error(u+' '+r.status);return r.json()};
+function row(tb,cells){const tr=el('tr');cells.forEach(c=>{const td=el('td');c instanceof Node?td.append(c):td.textContent=c;tr.append(td)});tb.append(tr);return tr}
+const pill=ok=>el('span','pill '+(ok?'pass':'fail'),ok?'PASS':'FAIL');
+async function load(){
+ const [s,sc,runs]=await Promise.all([j('/api/summary'),j('/api/scenarios'),j('/api/runs')]);
+ const m=el('span','badge '+(s.mode==='llm'?'real':'mock'),s.mode==='llm'?'REAL MODEL RUNS':'MOCK (harness test, not results)');
+ $('meta').replaceChildren(m,el('span','badge',' '+(s.model||'scripted stub')),el('span','badge',s.total_runs+' runs'));
+ $('cards').replaceChildren(...s.agents.map(a=>{const c=el('div','card');const h=el('h3');h.append(el('span','',a.agent),el('span','mut',a.runs+' runs'));
+  c.append(h,el('div','big',pct(a.success_rate)));c.append(el('div','mut','success rate'));
+  const g=el('div','grid2');[['Recovery rate',pct(a.recovery_rate)],['Avg tool calls',a.avg_tool_calls],['Avg steps',a.avg_steps],['Total tokens',a.total_tokens==null?'n/a':a.total_tokens],['Avg latency',a.avg_latency_ms==null?'n/a':Math.round(a.avg_latency_ms)+' ms'],['Policy violations',a.policy_violations],['Duplicate refunds',a.duplicate_refunds]].forEach(([k,v])=>{g.append(el('span','',k));const b=el('b','',v);g.append(b)});c.append(g);return c}));
+ const byId=Object.fromEntries(sc.map(x=>[x.id,x]));
+ $('matrix').replaceChildren();
+ s.pass_k.forEach(p=>{const sx=byId[p.scenario_id]||{};const f=(ok,t)=>{const d=el('span','cell');d.append(pill(ok),el('span','mut',t));return d};
+  row($('matrix'),[p.scenario_id+' '+(sx.name||''),sx.fault||'',f(p.baseline,p.baseline_passes),f(p.resilient,p.resilient_passes)])});
+ $('count').textContent='('+runs.length+')';$('runs').replaceChildren();
+ runs.forEach(r=>{const tr=row($('runs'),[r.run_id,r.scenario_id,r.agent,r.rep+(r.replay_of?' (replay of '+r.replay_of+')':''),pill(r.passed),r.tool_calls,r.faults_injected+' ('+r.faults_recovered+')',r.retries,r.tokens_in==null?'n/a':r.tokens_in+r.tokens_out,r.latency_ms==null?'n/a':r.latency_ms+' ms']);tr.className='run';tr.onclick=()=>show(r.run_id,true)});
+}
+async function show(id,scroll){
+ const r=await j('/api/runs/'+id),d=$('detail');d.style.display='block';d.replaceChildren();
+ const h=el('h3','',r.run_id+' · '+r.scenario_id+' · '+r.agent+' · rep '+r.rep);d.append(h,el('div','mut','seed '+r.seed+(r.replay_of?' · replay of '+r.replay_of:'')),el('div','',r.outcome_reason));
+ const chk=el('div','chk');(r.evaluation.checks||[]).forEach(c=>{const p=el('span','pill '+(c.passed?'pass':'fail'),c.name+': '+(c.passed?'ok':'actual '+JSON.stringify(c.actual)));chk.append(p)});d.append(chk);
+ const b=el('button','','Replay this run (same seed)');b.onclick=async()=>{b.disabled=true;b.textContent='Replaying...';try{const n=await j('/api/runs/'+id+'/replay',{method:'POST'});await load();show(n.run_id)}catch(e){b.textContent='Replay failed: '+e.message}};d.append(b);
+ if(r.mode==='llm')d.append(el('div','note','Replaying a real run calls the model again (free tier) and can differ from the original.'));
+ const tl=el('div','tl');r.events.forEach(e=>{const x=el('div','ev '+e.event+' '+(e.status||''));
+  const head=el('div','',('#'+e.step+' '+e.event+(e.tool?' · '+e.tool:'')+(e.status?' · '+e.status:'')+(e.error?' · '+e.error:'')));
+  if(e.event==='fault_injected'||e.event==='model_error')head.classList.add('fault');x.append(head);
+  const meta=[];if(e.latency_ms!=null)meta.push(e.latency_ms+' ms');if(e.tokens_in!=null)meta.push(e.tokens_in+'→'+e.tokens_out+' tokens');if(meta.length)x.append(el('div','mut',meta.join(' · ')));
+  if(e.detail)x.append(el('code','',e.detail));tl.append(x)});d.append(tl);if(scroll)d.scrollIntoView({behavior:'smooth'});
+}
+load().then(()=>{const m=location.hash.match(/run=(\w+)/);if(m)show(m[1])}).catch(e=>{document.body.append(el('pre','',String(e)))});
+</script></body></html>
