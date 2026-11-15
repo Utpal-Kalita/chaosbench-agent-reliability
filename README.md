@@ -2,7 +2,7 @@
 
 > Don't just test what AI agents can do. Test what happens when things go wrong.
 
-Built solo for the Geek Room Global AI Hackathon 2026, theme 2 (framework-independent agent benchmarking).
+Built solo for the Geek Room Global AI Hackathon 2026, theme 2 (agent benchmarking). Today it ships two built-in agents on one OpenAI-compatible adapter; other frameworks are not supported yet.
 ChaosBench runs two agents on identical tasks, in an identical simulated customer-support backend, while a seeded chaos engine
 injects failures. Outcomes are judged by inspecting the database, not by trusting what the agent says.
 
@@ -70,5 +70,5 @@ See `contracts/real_results_granite.json`: 30 real runs on `@cf/ibm-granite/gran
 
 ## Honest limits
 - One simulated domain, two built-in agents, small models, 3 repetitions.
-- Not yet implemented: Bifrost gateway integration (the adapter speaks the OpenAI-compatible protocol, which is what Bifrost exposes, but this has not been tested against a Bifrost instance), arbitrary user-supplied agents, timeout faults.
+- Not yet implemented: Bifrost gateway integration (the adapter speaks the OpenAI-compatible protocol, which is what Bifrost exposes, but this has not been tested against a Bifrost instance), arbitrary user-supplied agents, timeout faults, dollar cost per run (only provider-reported token counts are measured; nothing is estimated).
 - AI use disclosure: the code was written with AI assistance (an AI assistant wrote the code, tests, docs and slide text) during the hackathon window. All reported results come from recorded model runs.
